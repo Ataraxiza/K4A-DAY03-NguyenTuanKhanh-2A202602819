@@ -13,14 +13,14 @@
 | **1. Multi-step Reasoning** | 3/5 | Người dùng có thể yêu cầu nhiều thao tác liên tiếp: xác định tài liệu dựa trên mô tả → kiểm tra vị trí/kệ → kiểm tra tình trạng còn sẵn hay đang được mượn → kiểm tra thông tin người mượn/hạn trả → xác định tài liệu có đủ điều kiện gia hạn hay không → thực hiện gia hạn. Các bước có quan hệ với nhau, không đơn thuần là các câu hỏi độc lập với nhau.
 | **2. Tool Interaction** | 5/ 5 | Agent cần tương tác với MCP Server/CSDL thư viện để tìm kiếm catalogue, vị trí tài liệu, trạng thái mượn/trả và có thể thực hiện thao tác gia hạn.
 | **3. Dynamic Decision** | 5/ 5 | Có những yêu cầu từ người dùng chỉ cần 1 thao tác ngắn nhưng cũng có những yêu cầu cần được thực hiện qua nhiều bước liên tiếp, trong đó kết quả của bước trước sẽ được dùng để quyết định bước tiếp theo. Ví dụ, tra cứu vị trí sách có workflow như sau:
-  1: Sách có trong hệ thống hay không -> 2.1 hoặc 2.2
-  2.1: Tra cứu tình trạng mượn trả (nếu sách có trong hệ thống) -> 3.1 hoặc 3.2
-  2.2: Thông báo không tìm thấy sách trong hệ thống -> End flow
-  3.1: Tìm vị trí của sách nếu sách vẫn còn -> 4.1
-  3.2: Thông báo sách đã được mượn và ngày sách được trả lại -> 4.2
-  4.1: Thông báo vị trí của sách -> End flow
-  4.2: Hỏi người mượn có muốn gợi ý những sách với nội dung tương tự không -> 5
-  5: Gợi ý các sách với nội dung tương tự (Một work flow khác)
+||  1: Sách có trong hệ thống hay không -> 2.1 hoặc 2.2 |
+||  2.1: Tra cứu tình trạng mượn trả (nếu sách có trong hệ thống) -> 3.1 hoặc 3.2 |
+||  2.2: Thông báo không tìm thấy sách trong hệ thống -> End flow |
+||  3.1: Tìm vị trí của sách nếu sách vẫn còn -> 4.1 |
+||  3.2: Thông báo sách đã được mượn và ngày sách được trả lại -> 4.2 |
+||  4.1: Thông báo vị trí của sách -> End flow |
+||  4.2: Hỏi người mượn có muốn gợi ý những sách với nội dung tương tự không -> 5 |
+||  5: Gợi ý các sách với nội dung tương tự (Một work flow khác) |
 | **4. Long Horizon Goal** | 3/ 5 | Các yêu cầu thường có thể được giải quyết chỉ trong 1 lượt tương tác nếu yêu cầu được đưa ra rõ ràng (tìm sách với tên cụ thể, tra cứu tình trạng mượn trả, thực hiện mượn/ trả/ gia hạn mượn). Đối với các yêu cầu mơ hồ (VD: Tôi muốn mượn 1 cuốn sách để ôn tập cho kỳ thi tuyển sinh lớp 10) thì hệ thống sẽ cần cung cấp thêm thông tin và hỏi ý kiến người đối thoại ở các lượt tương tác tiếp theo trước khi giải quyết được yêu cầu đặt ra ban đầu bởi người dùng. Nhưng xác suất của các yêu cầu này có thể không nhiều.
 | **TỔNG ĐIỂM AGENTIC FIT** | **16/20** | *Nếu tổng điểm > 12/20: Bài toán rất phù hợp triển khai Agentic System.* |
 
