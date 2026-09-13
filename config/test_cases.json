@@ -1,0 +1,37 @@
+[
+  {
+    "id": "TC01",
+    "type": "direct_query",
+    "question": "Xin chào, tôi muốn biết quy trình đăng ký mượn sách?",
+    "expected_behavior": "Chatbot trả lời trực tiếp từ System Prompt, không cần gọi bất kỳ Tool nào.",
+    "complexity": "Low"
+  },
+  {
+    "id": "TC02",
+    "type": "single_tool_query",
+    "question": "Hãy tra cứu tình trạng mượn trả của cuốn sách 'Python Programming'.",
+    "expected_behavior": "Agent nhận diện nhu cầu tra cứu, tự động phát sinh Tool Call 'check_book_status' với mã sách 'Python Programming'.",
+    "complexity": "Medium"
+  },
+  {
+    "id": "TC03",
+    "type": "borrowed_book_renewal",
+    "question": "Tôi muốn gia hạn mượn cuốn sách 'Python Programming' thêm 2 tuần nữa.",
+    "expected_behavior": "Agent tự động phát sinh Tool Call 'renew_borrowed_book' với đúng thông tin cuốn sách và thông tin người mượn.",
+    "complexity": "Medium"
+  },
+  {
+    "id": "TC04",
+    "type": "multi_step_reasoning",
+    "question": "Tôi muốn mượn sách để ôn thi THPT quốc gia",
+    "expected_behavior": "Agent thực hiện chuỗi suy luận ReAct: Tìm kiếm sách liên quan đến ôn thi THPT quốc gia, sau đó tra cứu tình trạng mượn trả của các cuốn sách tìm được, và cuối cùng đề xuất các cuốn sách còn sẵn để mượn.",
+    "complexity": "High"
+  },
+  {
+    "id": "TC05",
+    "type": "edge_case_handling",
+    "question": "Tôi muốn mượn cuốn sách 'Advanced Quantum Mechanics'",
+    "expected_behavior": "Agent nhận kết quả NOT_FOUND từ Tool và đưa ra phản hồi lịch sự, chính xác không bịa đặt dữ liệu.",
+    "complexity": "Medium"
+  }
+]

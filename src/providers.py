@@ -27,37 +27,247 @@ class BaseLLMProvider:
 
 
 class MockOfflineProvider(BaseLLMProvider):
-    """Offline Mock Provider dùng để chạy thử mà không tốn API Key"""
+    """
+    Offline Mock Provider cho Library Agent.
+
+    Compatible with MCPLibraryServer + tools.py.
+
+    Test Cases:
+
+    TC01:
+        Direct query
+        -> Không gọi Tool
+
+    TC02:
+        Check Python Programming
+        -> check_book_status
+
+    TC03:
+        Renew Python Programming
+        -> renew_borrowed_book
+
+    TC04:
+        Tìm sách ôn thi THPT Quốc gia
+        -> search_books
+        -> check_book_status
+
+    TC05:
+        Advanced Quantum Mechanics
+        -> check_book_status
+        -> NOT_FOUND
+    """
+
     def __init__(self):
-        self.model_name = "Offline-Mock-Model-2026"
+        self.model_name = "Offline-Library-Mock-Model-2026"
 
-    def generate(self, prompt: str, system_prompt: str = "") -> str:
-        return f"[Mock Chatbot Response]: Xin chào! Tôi đã nhận được câu hỏi '{prompt}'. (Chế độ Chatbot không có Tool tra cứu dữ liệu thời gian thực)."
+    # ======================================================================
+    # DIRECT RESPONSE
+    # ======================================================================
 
-    def generate_with_tools(self, prompt: str, tools_schema: List[Dict[str, Any]], system_prompt: str = "") -> Dict[str, Any]:
+    def generate(
+        self,
+        prompt: str,
+        system_prompt: str = ""
+    ) -> str:
+
         prompt_lower = prompt.lower()
-        
-        # Mô phỏng nhận diện intent gọi Tool
-        if "sv2026001" in prompt_lower and "đặt lịch" in prompt_lower:
+
+        # TC01
+        if "đăng ký mượn sách" in prompt_lower:
+            return (
+                "[Mock Chatbot Response]: "
+                "Để đăng ký mượn sách, bạn cần tìm kiếm cuốn sách "
+                "trong thư viện, kiểm tra tình trạng sách và thực hiện "
+                "yêu cầu mượn nếu sách đang ở trạng thái AVAILABLE."
+            )
+
+        return (
+            "[Mock Chatbot Response]: "
+            f"Tôi đã nhận được câu hỏi '{prompt}'."
+        )
+
+    # ======================================================================
+    # TOOL-AWARE RESPONSE
+    # ======================================================================
+
+    def generate_with_tools(
+        self,
+        prompt: str,
+        tools_schema: List[Dict[str, Any]],
+        system_prompt: str = ""
+    ) -> Dict[str, Any]:
+
+        prompt_lower = prompt.lower()
+
+        # ==================================================================
+        # TC03
+        # Gia hạn Python Programming thêm 2 tuần
+        #
+        # IMPORTANT:
+        # renew_borrowed_book trong tools.py hiện tại chỉ yêu cầu:
+        #   book_name
+        #   additional_weeks
+        #
+        # Không truyền student_id.
+        # ==================================================================
+
+        if (
+            "gia hạn" in prompt_lower
+            and "python programming" in prompt_lower
+        ):
             return {
                 "type": "tool_call",
-                "tool_name": "schedule_appointment",
-                "arguments": {"student_id": "SV2026001", "datetime_str": "14:00 15/09/2026", "advisor_name": "PGS.TS Nguyễn Văn A"},
-                "thought": "Người dùng yêu cầu đặt lịch hẹn tư vấn cho sinh viên SV2026001. Tôi sẽ gọi tool schedule_appointment."
+
+                "tool_name": "renew_borrowed_book",
+
+                "arguments": {
+                    "book_name": "Python Programming",
+                    "additional_weeks": 2
+                },
+
+                "thought": (
+                    "Người dùng muốn gia hạn cuốn sách "
+                    "'Python Programming' thêm 2 tuần. "
+                    "Tôi sẽ gọi tool renew_borrowed_book."
+                )
             }
-        elif "sv2026001" in prompt_lower or "tra cứu" in prompt_lower:
+
+        # ==================================================================
+        # TC04 - STEP 2
+        #
+        # Nếu Agent đã nhận kết quả search_books và prompt/context
+        # chứa "Toán học 12", kiểm tra tình trạng sách.
+        # ==================================================================
+
+        if (
+            "toán học 12" in prompt_lower
+            and (
+                "kết quả" in prompt_lower
+                or "search_books" in prompt_lower
+                or "available" in prompt_lower
+                or "tool" in prompt_lower
+            )
+        ):
             return {
                 "type": "tool_call",
-                "tool_name": "academic_query",
-                "arguments": {"student_id": "SV2026001"},
-                "thought": "Người dùng muốn tra cứu thông tin học vụ của sinh viên SV2026001. Tôi sẽ gọi tool academic_query."
+
+                "tool_name": "check_book_status",
+
+                "arguments": {
+                    "book_name": "Toán học 12"
+                },
+
+                "thought": (
+                    "Tôi đã tìm được cuốn 'Toán học 12'. "
+                    "Tôi sẽ kiểm tra tình trạng mượn trả của "
+                    "cuốn sách để xác định sách có thể cho mượn hay không."
+                )
             }
-        else:
+
+        # ==================================================================
+        # TC04 - STEP 1
+        #
+        # Tìm sách liên quan đến ôn thi THPT Quốc gia.
+        # ==================================================================
+
+        if (
+            "ôn thi thpt quốc gia" in prompt_lower
+            or "on thi thpt quoc gia" in prompt_lower
+            or (
+                "mượn sách" in prompt_lower
+                and "thpt" in prompt_lower
+            )
+        ):
             return {
-                "type": "text",
-                "content": f"[Mock Agent Response]: Xin chào! Quy chế học vụ VinUni yêu cầu sinh viên tích lũy tối thiểu 120 tín chỉ và duy trì GPA trên 2.0 để tốt nghiệp.",
-                "thought": "Câu hỏi chung về quy chế học vụ, trả lời trực tiếp không cần gọi Tool."
+                "type": "tool_call",
+
+                "tool_name": "search_books",
+
+                "arguments": {
+                    "query": "ôn thi THPT quốc gia"
+                },
+
+                "thought": (
+                    "Người dùng muốn tìm sách để ôn thi "
+                    "THPT Quốc gia. Tôi sẽ gọi search_books "
+                    "để tìm các sách phù hợp."
+                )
             }
+
+        # ==================================================================
+        # TC05
+        #
+        # Sách không tồn tại.
+        # Tool sẽ trả về NOT_FOUND.
+        # ==================================================================
+
+        if "advanced quantum mechanics" in prompt_lower:
+            return {
+                "type": "tool_call",
+
+                "tool_name": "check_book_status",
+
+                "arguments": {
+                    "book_name": "Advanced Quantum Mechanics"
+                },
+
+                "thought": (
+                    "Người dùng muốn mượn cuốn sách "
+                    "'Advanced Quantum Mechanics'. "
+                    "Tôi cần kiểm tra xem sách có tồn tại "
+                    "trong thư viện hay không."
+                )
+            }
+
+        # ==================================================================
+        # TC02
+        #
+        # Kiểm tra Python Programming.
+        # ==================================================================
+
+        if (
+            "python programming" in prompt_lower
+            and (
+                "tình trạng" in prompt_lower
+                or "mượn trả" in prompt_lower
+                or "tra cứu" in prompt_lower
+                or "kiểm tra" in prompt_lower
+            )
+        ):
+            return {
+                "type": "tool_call",
+
+                "tool_name": "check_book_status",
+
+                "arguments": {
+                    "book_name": "Python Programming"
+                },
+
+                "thought": (
+                    "Người dùng muốn tra cứu tình trạng "
+                    "mượn trả của 'Python Programming'. "
+                    "Tôi sẽ gọi check_book_status."
+                )
+            }
+
+        # ==================================================================
+        # FALLBACK
+        # ==================================================================
+
+        return {
+            "type": "text",
+
+            "content": (
+                "[Mock Agent Response]: "
+                "Bạn cần có mã sinh viên hợp lệ để mượn sách, "
+                "đồng thời cần cung cấp tên sách chính xác để mình kiểm tra trong hệ thống thư viện."
+            ),
+
+            "thought": (
+                "Câu hỏi không yêu cầu sử dụng Tool "
+                "trong các Test Case hiện tại."
+            )
+        }
 
 
 class GeminiProvider(BaseLLMProvider):
